@@ -8,6 +8,10 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Storage;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\ProdukExport;
+use App\Models\TransaksiModel;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
+use Midtrans\Notification;
 
 class ProdukController extends Controller
 {
@@ -19,7 +23,7 @@ class ProdukController extends Controller
 
     public function create()
     {
-        return view('produk.create');
+        return view('Admin_page.produk.create');
     }
 
     public function store(Request $request): RedirectResponse
@@ -51,13 +55,13 @@ class ProdukController extends Controller
     public function show($id)
     {
         $produk = ProdukModel::findOrFail($id);
-        return view('produk.show', compact('produk'));
+        return view('Admin_page.produk.show', compact('produk'));
     }
 
     public function edit($id)
     {
         $produk = ProdukModel::findOrFail($id);
-        return view('produk.edit', compact('produk'));
+        return view('Admin_page.produk.edit', compact('produk'));
     }
 
     public function update(Request $request, $id): RedirectResponse
@@ -125,5 +129,124 @@ class ProdukController extends Controller
     public function export()
     {
         return Excel::download(new ProdukExport(), 'produk.xlsx');
+    }
+
+    public function katalog_user()
+    {
+        $produk = ProdukModel::all();
+        return view('User_page.produk.katalog', compact('produk'));
+    }
+
+    public function show_user($id)
+    {
+        $produk = ProdukModel::findOrFail($id);
+        return view('User_page.produk.show', compact('produk'));
+    }
+
+    public function store_user(Request $request): RedirectResponse
+    {
+        $produk_id = $request->input('produk_id');
+        $produk = ProdukModel::where('id', $produk_id)->first();
+        $data = Auth::user();
+        $order_id = 'ORDER-' . time();
+
+        $transaksi = TransaksiModel::create([
+            'user_id' => Auth::user()->user_id,
+            'id' => $produk_id,
+            'price' => $produk->harga_produk ?? '-',
+            'status' => 'pending',
+            'order_id' => $order_id,
+        ]);
+
+        $durationInMinutes = 3;
+
+        // Set your Merchant Server Key
+        \Midtrans\Config::$serverKey = config('midtrans.serverKey');
+        // Set to Development/Sandbox Environment (default). Set to true for Production Environment (accept real transaction).
+        \Midtrans\Config::$isProduction = config('midtrans.isProduction');
+        // Set sanitization on (default)
+        \Midtrans\Config::$isSanitized = config('midtrans.isSanitized');
+        // Set 3DS transaction for credit card to true
+        \Midtrans\Config::$is3ds = config('midtrans.is3ds');
+
+        $params = [
+            'transaction_details' => [
+                'order_id' => $order_id,
+                'gross_amount' => $produk->harga_produk,
+            ],
+            'customer_details' => [
+                'first_name' => $data->name,
+                'email' => $data->email,
+            ],
+            'expiry' => [
+                'start_time' => date('Y-m-d H:i:s O'), // waktu sekarang + zona waktu server
+                'unit' => 'minute', // minute / hour / day
+                'duration' => $durationInMinutes,
+            ],
+        ];
+
+        $snapToken = \Midtrans\Snap::getSnapToken($params);
+
+        $transaksi->snap_token = $snapToken;
+        $transaksi->save();
+
+        return redirect()->route('user.produk.pembayaran', [
+            'snapToken' => $snapToken,
+        ]);
+    }
+
+    public function callback(Request $request)
+    {
+        \Midtrans\Config::$serverKey = config('midtrans.serverKey');
+        \Midtrans\Config::$isProduction = config('midtrans.isProduction');
+        \Midtrans\Config::$isSanitized = config('midtrans.isSanitized');
+        \Midtrans\Config::$is3ds = config('midtrans.is3ds');
+
+        $notif = new Notification();
+
+        $transaction_status = $notif->transaction_status;
+        $orderId = $notif->order_id;
+        $statusCode = $notif->status_code;
+        $grossAmount = $notif->gross_amount;
+        $signatureKey = $notif->signature_key;
+
+        // Hitung ulang signature
+        $expectedSignature = hash(
+            'sha512',
+            $orderId .
+                $statusCode .
+                $grossAmount .
+                config('midtrans.serverKey'),
+        );
+
+        if ($expectedSignature !== $signatureKey) {
+            Log::warning('Invalid signature', [
+                'expected' => $expectedSignature,
+                'received' => $signatureKey,
+            ]);
+            return response()->json(['message' => 'Invalid signature'], 401);
+        }
+
+        $transaksi = TransaksiModel::where('order_id', $orderId)->first();
+
+        if ($transaction_status == 'settlement') {
+            $transaksi->status = 'success';
+            $transaksi->save();
+        } elseif (
+            in_array(strtolower($transaction_status), ['expire', 'expired'])
+        ) {
+            $transaksi->status = 'expired';
+            $transaksi->save();
+        }
+    }
+    public function history()
+    {
+        $user = Auth::user();
+        $transaksi = TransaksiModel::where('user_id', $user->user_id)
+            ->with('produk')
+            ->orderBy('transaksi_id', 'desc')
+            ->paginate(10);
+
+        return view('User_page.produk.history', compact('transaksi'));
     }
 }

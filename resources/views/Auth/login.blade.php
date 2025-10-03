@@ -42,6 +42,9 @@
                     <div class="card-footer text-center">
                         <small>Belum punya akun? <a href="{{ route('registerForm') }}">Daftar</a></small>
                     </div>
+                    <div class="mb-3 text-center">
+                        <a href="{{ route('katalog') }}" class="btn btn-link">Kembali ke Beranda</a>   
+                    </div>
                 </div>
             </div>
         </div>

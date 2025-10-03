@@ -21,7 +21,7 @@
                                 {{ $item->nama_produk }}
                             </h5>
                             <p class="card-text">
-                                {{ \Illuminate\Support\Str::l imit(strip_tags($item->deskripsi_produk), 80) }}
+                                {{ \Illuminate\Support\Str::limit(strip_tags($item->deskripsi_produk), 80) }}
                             </p>
                             <p class="card-text">
                                 Harga : Rp

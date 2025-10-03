@@ -11,9 +11,15 @@
             </a>
         </li>
         <li>
-            <a href="#"
-                class="nav-link">
+            <a href="{{ route('produk.katalog') }}"
+                class="nav-link {{ request()->is('user/produk*') ? 'active' : 'link-dark' }}">
                 Produk
+            </a>
+        </li>
+        <li>
+            <a href="{{ route('produk.history') }}"
+                class="nav-link {{ request()->is('user/history*') ? 'active' : 'link-dark' }}">
+                History Pembelian
             </a>
         </li>
         <li>

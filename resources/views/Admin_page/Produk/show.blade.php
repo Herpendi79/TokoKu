@@ -37,6 +37,7 @@
                             </tr>
                         </table>
                         <a href="{{ route('produk.index') }}" class="btn btn-secondary">Kembali ke Daftar Produk</a>    
+                        <button che
                     </div>
                 </div>
             </div>
