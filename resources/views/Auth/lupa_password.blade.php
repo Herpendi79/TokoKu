@@ -6,10 +6,10 @@
             <div class="col-md-5">
                 <div class="card shadow-sm">
                     <div class="card-header text-center">
-                        <h4>Login</h4>
+                        <h4>Reset Password</h4>
                     </div>
                     <div class="card-body">
-                        <form method="POST" action="{{ route('cek_login') }}">
+                        <form method="POST" action="{{ route('resetPassword') }}">
                             @csrf
 
                             <!-- Email -->
@@ -25,27 +25,20 @@
 
                             <!-- Password -->
                             <div class="mb-3">
-                                <label for="password" class="form-label">Password</label>
-                                <input id="password" type="password"
-                                    class="form-control @error('password') is-invalid @enderror" name="password" required>
-                                @error('password')
+                                <label for="no_hp" class="form-label">No Whatsapp</label>
+                                <input id="no_hp" type="text"
+                                    class="form-control @error('no_hp') is-invalid @enderror" name="no_hp" required>
+                                @error('no_hp')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
 
                             <!-- Button -->
                             <div class="d-grid">
-                                <button type="submit" class="btn btn-primary">Login</button>
+                                <button type="submit" class="btn btn-primary">Reset</button>
                             </div>
                         </form>
                     </div>
-                    <div class="card-footer text-center">
-                        <small>Belum punya akun? <a href="{{ route('registerForm') }}">Daftar</a></small>
-                    </div>
-                    <div class="card-footer text-center">
-                        <small>Lupa Password? <a href="{{ route('lupaPassword') }}">Klik Disini</a></small>
-                    </div>
-                    
                     <div class="mb-3 text-center">
                         <a href="{{ route('katalog') }}" class="btn btn-link">Kembali ke Beranda</a>   
                     </div>

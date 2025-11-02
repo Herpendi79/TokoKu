@@ -4,7 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use App\Models\User;    
+use App\Models\User;
+use Illuminate\Support\Facades\Log;
 
 class AuthController extends Controller
 {
@@ -55,6 +56,77 @@ class AuthController extends Controller
         return view('Auth.register');
     }
 
+    public function lupaPassword()
+    {
+        return view('Auth.lupa_password');
+    }
+
+    public function resetPassword(Request $request)
+    {
+        if ($request->isMethod('get')) {
+            return view('auth.forget_password');
+        } elseif ($request->isMethod('post')) {
+            $request->validate([
+                'email' => 'required|email',
+                'no_hp' => 'required|string',
+            ]);
+            $email = $request->input('email');
+            $no_hp = $request->input('no_hp');
+            $anggota = User::where('email', $email)->where('no_hp', $no_hp)->first();
+
+            if (!$anggota) {
+                return redirect()->back()->withErrors([
+                    'email' => 'Email atau nomor HP tidak ditemukan.',
+                ]);
+            }
+            // bikin token reset password
+            $token = bin2hex(random_bytes(3)); // Membuat token acak
+
+            // ubah password
+            $anggota->password = bcrypt($token); // Simpan token sebagai password baru
+            $anggota->save();
+
+            $message = "Halo " . $anggota->name . " 👋,\n\n" .
+                "Kami menerima permintaan untuk mengatur ulang password akun Anda. Jika Anda tidak meminta ini, abaikan pesan ini.\n\n" .
+                "Berikut adalah *password baru* Anda: ✌️:\n\n" .
+                "" . $token . "\n\n" .
+                "📝 Silakan masuk ke akun Anda dengan password baru ini dan ubah password Anda segera setelah login sistem.\n\n" .
+                "Selamat Berbelanja\n\n" .
+                "Salam,  *Tim ADAKSI*";
+
+            // Kirim pesan ke semua admin
+            $curl = curl_init();
+
+            curl_setopt_array($curl, array(
+                CURLOPT_URL => 'https://api.fonnte.com/send',
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_ENCODING => '',
+                CURLOPT_MAXREDIRS => 10,
+                CURLOPT_TIMEOUT => 0,
+                CURLOPT_FOLLOWLOCATION => true,
+                CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+                CURLOPT_CUSTOMREQUEST => 'POST',
+                CURLOPT_POSTFIELDS => array(
+                    'target' => $anggota->no_hp,
+                    'message' => $message,
+                ),
+                CURLOPT_HTTPHEADER => array(
+                    'Authorization: szrYmqtfHMMnUeE7kgrf'
+                ),
+            ));
+
+            $response = curl_exec($curl);
+            if (curl_errno($curl)) {
+                $error_msg = curl_error($curl);
+                // Jika error, log atau tampilkan
+                Log::error('WhatsApp API Error: ' . $error_msg);
+            }
+            curl_close($curl);
+            // arahkan ke login
+            return redirect('/login')->with('success', 'Permintaan reset password berhasil. Silakan cek WhatsApp Anda untuk mendapatkan password baru.');
+        }
+    }
+
     public function register(Request $request)
     {
         $request->validate([
@@ -73,5 +145,4 @@ class AuthController extends Controller
 
         return redirect()->route('login')->with('success', 'Registrasi berhasil. Silakan login.');
     }
-
 }

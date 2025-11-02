@@ -79,3 +79,9 @@ Route::get('/admin/dashboard', function () {
 Route::get('/user/dashboard', function () {
     return view('User_page.Main.dashboard');
 })->name('user.dashboard');
+
+Route::get('/forget-password', [AuthController::class, 'lupaPassword'])->name(
+    'lupaPassword',
+);
+
+Route::post('/resetPassword', [AuthController::class, 'resetPassword'])->name('resetPassword');
