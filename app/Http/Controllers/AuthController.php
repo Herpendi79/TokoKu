@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\User;
 use Illuminate\Support\Facades\Log;
+use Laravel\Socialite\Facades\Socialite;
 
 class AuthController extends Controller
 {
@@ -144,5 +145,33 @@ class AuthController extends Controller
         ]);
 
         return redirect()->route('login')->with('success', 'Registrasi berhasil. Silakan login.');
+    }
+
+    public function google_redirect()
+    {
+        return Socialite::driver('google')->redirect();
+    }
+
+    public function google_callback()
+    {
+        $googleUser = Socialite::driver('google')->stateless()->user();
+        $user = User::whereEmail($googleUser->email)->first();
+
+        if (!$user) {
+            return redirect('/login')->withErrors([
+                'email' => 'Email tidak terdaftar. Silakan daftar anggota terlebih dahulu.',
+            ]);
+        }
+
+        Auth::login($user);
+        if (Auth::user()->role === 'admin') {
+            return redirect()->intended('/admin/dashboard');
+        } elseif (Auth::user()->role === 'user') {
+            return redirect()->intended('/user/dashboard');
+        } else {
+            Auth::logout();
+            return redirect()->route('login')
+                ->withErrors(['email' => 'Role tidak dikenali.']);
+        }
     }
 }

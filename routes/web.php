@@ -85,3 +85,6 @@ Route::get('/forget-password', [AuthController::class, 'lupaPassword'])->name(
 );
 
 Route::post('/resetPassword', [AuthController::class, 'resetPassword'])->name('resetPassword');
+
+Route::get('/auth-google-redirect', [AuthController::class, 'google_redirect'])->name('auth.google');
+Route::get('/auth-google-callback', [AuthController::class, 'google_callback']);

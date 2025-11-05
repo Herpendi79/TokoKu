@@ -37,6 +37,20 @@
                             <div class="d-grid">
                                 <button type="submit" class="btn btn-primary">Login</button>
                             </div>
+                            <br>
+                            <div class="form-group mb-0 row">
+                                <div class="col-12">
+                                    <div class="d-grid">
+                                        <a href="{{ route('auth.google') }}"
+                                            class="btn btn-light fw-semibold d-flex align-items-center justify-content-center border">
+                                            <img src="{{ url('/') }}/assets/g-logo-login.png" alt="Google Logo"
+                                                style="width: 20px; height: 20px; margin-right: 10px;">
+                                            Masuk dengan Google
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
                         </form>
                     </div>
                     <div class="card-footer text-center">
@@ -45,9 +59,9 @@
                     <div class="card-footer text-center">
                         <small>Lupa Password? <a href="{{ route('lupaPassword') }}">Klik Disini</a></small>
                     </div>
-                    
+
                     <div class="mb-3 text-center">
-                        <a href="{{ route('katalog') }}" class="btn btn-link">Kembali ke Beranda</a>   
+                        <a href="{{ route('katalog') }}" class="btn btn-link">Kembali ke Beranda</a>
                     </div>
                 </div>
             </div>
