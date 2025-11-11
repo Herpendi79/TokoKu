@@ -26,6 +26,15 @@ class AuthController extends Controller
         if (Auth::attempt($credentials, $request->filled('remember'))) {
             $request->session()->regenerate();
 
+            $user = Auth::user(); // ambil data user yang login
+
+            // 🔒 Tambahkan pengecekan verifikasi email di sini
+            if (! $user->hasVerifiedEmail()) {
+                Auth::logout();
+                return redirect()->route('login')
+                    ->with('error', 'Silakan verifikasi email terlebih dahulu sebelum login.');
+            }
+
             // Cek role user
             if (Auth::user()->role === 'admin') {
                 return redirect()->intended('/admin/dashboard');
@@ -137,14 +146,22 @@ class AuthController extends Controller
         ]);
 
         // Buat user baru dengan role 'user'
-        User::create([
+        $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => bcrypt($request->password),
             'role' => 'user', // Set role default sebagai 'user'
         ]);
 
-        return redirect()->route('login')->with('success', 'Registrasi berhasil. Silakan login.');
+        // Login sementara untuk kirim email verifikasi
+        Auth::login($user);
+
+        // Kirim email verifikasi
+        $user->sendEmailVerificationNotification();
+
+        // Arahkan ke halaman pemberitahuan
+        return redirect()->route('verification.notice')
+            ->with('success', 'Registrasi berhasil! Silakan cek email untuk verifikasi.');
     }
 
     public function google_redirect()
