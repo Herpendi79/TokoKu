@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\User;
 use Illuminate\Support\Facades\Log;
 use Laravel\Socialite\Facades\Socialite;
+use Illuminate\Support\Str;
 
 class AuthController extends Controller
 {
@@ -174,21 +175,25 @@ class AuthController extends Controller
         $googleUser = Socialite::driver('google')->stateless()->user();
         $user = User::whereEmail($googleUser->email)->first();
 
+        // Jika user belum ada → buat otomatis
         if (!$user) {
-            return redirect('/login')->withErrors([
-                'email' => 'Email tidak terdaftar. Silakan daftar anggota terlebih dahulu.',
+            $user = User::create([
+                'name' => $googleUser->getName() ?? explode('@', $googleUser->getEmail())[0],
+                'email' => $googleUser->getEmail(),
+                'password' => bcrypt(Str::random(12)),
+                'email_verified_at' => now(),
+                'role' => 'user',
             ]);
         }
 
-        Auth::login($user);
-        if (Auth::user()->role === 'admin') {
-            return redirect()->intended('/admin/dashboard');
-        } elseif (Auth::user()->role === 'user') {
-            return redirect()->intended('/user/dashboard');
-        } else {
-            Auth::logout();
-            return redirect()->route('login')
-                ->withErrors(['email' => 'Role tidak dikenali.']);
-        }
+        // Login otomatis
+        Auth::login($user, true);
+
+        // Arahkan sesuai role
+        return redirect(
+            $user->role === 'admin'
+                ? '/admin/dashboard'
+                : '/user/dashboard'
+        )->with('success', 'Berhasil login dengan Google!');
     }
 }
