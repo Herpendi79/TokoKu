@@ -17,6 +17,12 @@
             </a>
         </li>
         <li>
+            <a href="{{ route('qrcode.index') }}"
+                class="nav-link {{ request()->is('admin/qrcode*') ? 'active' : 'link-dark' }}">
+                QR Code
+            </a>
+        </li>
+        <li>
             <a href="{{ route('logout') }}" class="nav-link link-dark"
                 onclick="event.preventDefault(); 
                 if(confirm('Apakah Anda yakin ingin logout?')) {

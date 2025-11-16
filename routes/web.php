@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProdukController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\QRCodeController;
 use App\Models\TransaksiModel;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Http\Request;
@@ -110,3 +111,6 @@ Route::post('/resetPassword', [AuthController::class, 'resetPassword'])->name('r
 
 Route::get('/auth-google-redirect', [AuthController::class, 'google_redirect'])->name('auth.google');
 Route::get('/auth-google-callback', [AuthController::class, 'google_callback']);
+
+Route::get('/qr', [QRCodeController::class, 'index'])->name('qrcode.index');
+Route::post('/qr-store', [QRCodeController::class, 'store'])->name('qrcode.store');
