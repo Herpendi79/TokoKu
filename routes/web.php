@@ -7,6 +7,7 @@ use App\Http\Controllers\QRCodeController;
 use App\Models\TransaksiModel;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Http\Request;
+use App\Http\Controllers\LocationController;
 
 Route::get('admin/produk/tampil-produk', [
     ProdukController::class,
@@ -114,3 +115,7 @@ Route::get('/auth-google-callback', [AuthController::class, 'google_callback']);
 
 Route::get('/qr', [QRCodeController::class, 'index'])->name('qrcode.index');
 Route::post('/qr-store', [QRCodeController::class, 'store'])->name('qrcode.store');
+
+Route::get('admin/locations', [locationController::class, 'index'])->name('locations.index');
+Route::post('admin/store', [locationController::class, 'store'])->name('locations.store');
+Route::get('admin/locations/tracking/{id}', [locationController::class, 'tracking'])->name('locations.tracking');

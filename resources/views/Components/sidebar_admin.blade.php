@@ -23,16 +23,21 @@
             </a>
         </li>
         <li>
-            <a href="{{ route('logout') }}" class="nav-link link-dark"
-                onclick="event.preventDefault(); 
+            <a href="{{ route('locations.index') }}"
+                class="nav-link {{ request()->is('admin/locations*') ? 'active' : 'link-dark' }}">
+                Location
+            </a>
+        </li>
+        <a href="{{ route('logout') }}" class="nav-link link-dark"
+            onclick="event.preventDefault(); 
                 if(confirm('Apakah Anda yakin ingin logout?')) {
                     document.getElementById('logout-form').submit();
                 }">
-                Logout
-            </a>
-            <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
-                @csrf
-            </form>
+            Logout
+        </a>
+        <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
+            @csrf
+        </form>
         </li>
 
     </ul>
