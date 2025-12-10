@@ -8,6 +8,8 @@ use App\Models\TransaksiModel;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Http\Request;
 use App\Http\Controllers\LocationController;
+use App\Livewire\Pelanggans;
+
 
 Route::get('admin/produk/tampil-produk', [
     ProdukController::class,
@@ -119,3 +121,5 @@ Route::post('/qr-store', [QRCodeController::class, 'store'])->name('qrcode.store
 Route::get('admin/locations', [locationController::class, 'index'])->name('locations.index');
 Route::post('admin/store', [locationController::class, 'store'])->name('locations.store');
 Route::get('admin/locations/tracking/{id}', [locationController::class, 'tracking'])->name('locations.tracking');
+
+Route::get('admin/pelanggans', Pelanggans::class)->name('pelanggans.index');

@@ -28,6 +28,12 @@
                 Location
             </a>
         </li>
+        <li>
+            <a wire:navigate href="{{ route('pelanggans.index') }}"
+                class="nav-link {{ request()->routeIs('pelanggans.index') ? 'active' : 'link-dark' }}">
+                Pelanggan
+            </a>
+        </li>
         <a href="{{ route('logout') }}" class="nav-link link-dark"
             onclick="event.preventDefault(); 
                 if(confirm('Apakah Anda yakin ingin logout?')) {
