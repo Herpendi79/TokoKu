@@ -12,6 +12,10 @@ use App\Models\TransaksiModel;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Midtrans\Notification;
+use Intervention\Image\Facades\Image;
+use Intervention\Image\ImageManager;
+use Intervention\Image\Drivers\Gd\Driver;
+
 
 class ProdukController extends Controller
 {
@@ -34,23 +38,32 @@ class ProdukController extends Controller
             'harga_produk' => 'required|numeric',
             'stock_produk' => 'required|integer',
             'foto_produk' =>
-                'required|image|max:2048|mimes:jpeg,png,jpg,gif,svg',
+            'required|image|max:2048|mimes:jpeg,png,jpg,gif,svg',
         ]);
 
         $image = $request->file('foto_produk');
-        $image->storeAs('produk', $image->hashName());
+        $filename = uniqid() . '.webp';
+
+        $manager = new ImageManager(new Driver());
+
+        $img = $manager->read($image->getRealPath())
+        ->cover(1200, 675)
+        ->toWebp(70);
+
+        Storage::put('produk/' . $filename, $img);
 
         ProdukModel::create([
             'nama_produk' => $request->nama_produk,
             'deskripsi_produk' => $request->deskripsi_produk,
             'harga_produk' => $request->harga_produk,
             'stock_produk' => $request->stock_produk,
-            'foto_produk' => $image->hashName(),
+            'foto_produk' => $filename,
         ]);
         return redirect()
             ->route('produk.index')
             ->with('success', 'Produk berhasil ditambahkan.');
     }
+
 
     public function show($id)
     {
@@ -72,7 +85,7 @@ class ProdukController extends Controller
             'harga_produk' => 'required|numeric',
             'stock_produk' => 'required|integer',
             'foto_produk' =>
-                'sometimes|image|max:2048|mimes:jpeg,png,jpg,gif,svg',
+            'sometimes|image|max:2048|mimes:jpeg,png,jpg,gif,svg',
         ]);
 
         $produk = ProdukModel::findOrFail($id);
@@ -87,10 +100,18 @@ class ProdukController extends Controller
             }
 
             $image = $request->file('foto_produk');
-            $image->storeAs('produk', $image->hashName());
-            $produk->foto_produk = $image->hashName();
+            $filename = uniqid() . '.webp';
+
+            $manager = new ImageManager(new Driver());
+
+            $img = $manager->read($image->getRealPath())
+                ->cover(1200, 675)
+                ->toWebp(70);
+
+            Storage::put('produk/' . $filename, $img);
         }
 
+        $produk->foto_produk = $filename;
         $produk->nama_produk = $request->nama_produk;
         $produk->deskripsi_produk = $request->deskripsi_produk;
         $produk->harga_produk = $request->harga_produk;

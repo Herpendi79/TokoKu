@@ -88,7 +88,7 @@
                                 @error('foto_produk')
                                     <div class="alert alert-danger mt-2">{{ $message }}</div>
                                 @enderror
-                            </div>ß
+                            </div>
                             <button type="submit" class="btn btn-primary">Simpan Produk</button>
                             <button type="reset" class="btn btn-warning">Reset</button>
                             <a href="{{ route('produk.index') }}" class="btn btn-secondary">Kembali</a>

@@ -18,7 +18,7 @@
 
             <!-- Main Content -->
             <main class="py-4 container">
-                {{ $slot }}
+                {{ $slot ?? '' }}
             </main>
         </div>
     </div>
